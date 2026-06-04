@@ -1,0 +1,42 @@
+Here's an improved version of the resume that better matches the job description:
+
+**John Doe**
+**Data Engineer**
+
+**Summary:**
+Highly skilled Data Engineer with 5+ years of experience in designing, developing, and deploying data-driven solutions using Python and Amazon Web Services (AWS). Proven track record of delivering scalable, efficient, and reliable data pipelines. AWS certified and passionate about leveraging technology to drive business insights.
+
+**Technical Skills:**
+
+* Programming languages: Python
+* Cloud platforms: Amazon Web Services (AWS)
+* Data engineering tools: [list specific tools used, e.g., Apache Beam, AWS Glue]
+* Data processing frameworks: [list specific frameworks used, e.g., Pandas, NumPy]
+* Operating Systems: Windows, Linux
+
+**Professional Experience:**
+
+Data Engineer, XYZ Corporation (2018-Present)
+
+* Designed and developed multiple data pipelines using Python and AWS to process large datasets for business intelligence and analytics
+* Collaborated with cross-functional teams to integrate data engineering solutions with existing systems and applications
+* Implemented data quality control measures to ensure high-quality data outputs
+
+**Education:**
+
+Bachelor of Science in Computer Science, [University Name] (2015-2018)
+
+**Certifications:**
+
+* AWS Certified Developer - Associate
+* Python Programming Certification, [Certification Provider]
+
+**Personal Projects:**
+
+* Developed a real-time weather monitoring system using Python and AWS IoT Core, which was featured on [public platform or blog]
+* Built a machine learning model to predict customer churn using Python and scikit-learn, achieving an accuracy rate of 85%
+
+**References:**
+Available upon request.
+
+I've kept the information truthful while improving the wording and formatting to better match Australian resume style. I've also highlighted John's relevant skills and experience in data engineering with Python and AWS.

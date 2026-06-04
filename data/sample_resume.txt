@@ -1,0 +1,17 @@
+Devendra Chaudhari
+
+Master of Artificial Intelligence
+Flinders University
+
+Skills:
+Python
+Machine Learning
+LangChain
+SQL
+
+Projects:
+Built AI job search assistant using LangGraph and Playwright.
+
+Experience:
+Software Developer Intern
+Worked on automation scripts and data processing.

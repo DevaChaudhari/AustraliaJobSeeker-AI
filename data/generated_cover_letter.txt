@@ -1,0 +1,15 @@
+Dear Hiring Manager,
+
+I'm stoked to be applying for the Senior Data Engineer role at Atlassian, where I can leverage my passion for data engineering and AWS expertise to drive innovation. With 5 years of Python experience under my belt, I'm confident in my ability to hit the ground running and make a meaningful contribution to your team.
+
+As an AWS certified professional, I've had the opportunity to work on a range of projects that showcase my skills in designing and implementing scalable data architectures. My proficiency in Python has allowed me to develop robust data pipelines, integrate with various data sources, and craft efficient algorithms for data processing. I'm excited about the prospect of bringing these skills to bear on Atlassian's data engineering challenges.
+
+In my current role at [Current Company], I've had the chance to work on several projects that demonstrate my ability to collaborate with cross-functional teams, design and implement data solutions, and ensure high-quality delivery. One notable project involved developing a real-time analytics platform using Python and AWS services, which resulted in significant improvements to our business intelligence capabilities.
+
+I'm particularly drawn to Atlassian's commitment to innovation and customer satisfaction. As someone who is passionate about building scalable and reliable data systems, I believe that my skills and experience would be a great fit for your team. I'm excited about the opportunity to work with such a talented group of professionals and contribute to the company's continued success.
+
+Thank you for considering my application. I'd love the chance to discuss this role further and explore how my skills align with Atlassian's needs. Please feel free to contact me at [Your Contact Information].
+
+Best regards,
+
+John Doe
