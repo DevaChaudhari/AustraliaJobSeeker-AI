@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy project files
-COPY pyproject.toml uv.lock* ./
+COPY pyproject.toml uv.lock ./
 COPY agents/ ./agents/
 COPY tools/ ./tools/
 COPY models/ ./models/
@@ -31,7 +31,6 @@ RUN playwright install chromium
 
 # Set Python path
 ENV PYTHONPATH=/app:$PYTHONPATH
-ENV GROQ_API_KEY=${GROQ_API_KEY}
 
 # Cloud Run expects the container to listen on port 8080
 EXPOSE 8080

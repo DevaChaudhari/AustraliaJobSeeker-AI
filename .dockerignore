@@ -1,4 +1,3 @@
-@"
 .venv
 .git
 .gitignore
@@ -11,4 +10,3 @@ dist/
 .env
 .env.local
 tests/
-"@ | Out-File -FilePath Docker/.dockerignore -Encoding utf8
