@@ -1,0 +1,52 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
+    ports:
+      - "9999:9999"
+      - "8000:8000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
+    volumes:
+      - ../data:/app/data
+    networks:
+      - australiajobseeker
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
+    command: streamlit run frontend/app.py
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://app:8000
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_SERVER_HEADLESS=true
+    depends_on:
+      - app
+    volumes:
+      - ../data:/app/data
+    networks:
+      - australiajobseeker
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    command: ollama serve
+    networks:
+      - australiajobseeker
+
+volumes:
+  ollama_data:
+
+networks:
+  australiajobseeker:
+    driver: bridge

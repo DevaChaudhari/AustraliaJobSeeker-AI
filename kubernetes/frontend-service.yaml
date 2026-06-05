@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: australiajobseeker
+spec:
+  type: LoadBalancer
+  selector:
+    app: australiajobseeker-frontend
+  ports:
+  - name: streamlit
+    port: 8501
+    targetPort: 8501
+    protocol: TCP

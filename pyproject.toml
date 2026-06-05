@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "australiajobseeker-ai"
-version = "0.1.0".
+version = "0.1.0"
 description = "Australia Job Seeker AI - AI-powered job search and application assistant"
 requires-python = ">=3.10"
 dependencies = [

@@ -1,3 +1,4 @@
+import asyncio
 from typing import TypedDict
 
 from langgraph.graph import (
@@ -20,10 +21,10 @@ class JobState(TypedDict):
 
 def search_node(state: JobState):
 
-    jobs = search_seek(
+    jobs = asyncio.run(search_seek(
         role=state["role"],
         location=state["location"]
-    )
+    ))
 
     return {
         **state,

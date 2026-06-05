@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.tmp/
+nodejs/
+nodejs.zip
+node-index.json
+.vscode/

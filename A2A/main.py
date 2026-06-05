@@ -99,7 +99,7 @@ def main():
     # ── Request Handler ────────────────────────────────────────────────────────
 
     from a2a.server.request_handlers import DefaultRequestHandler
-    from agent_executor import JobAssistantAgentExecutor
+    from .agent_executor import JobAssistantAgentExecutor
     from a2a.server.tasks import InMemoryTaskStore
 
     request_handler = DefaultRequestHandler(

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: australiajobseeker
+data:
+  OLLAMA_HOST: "http://ollama:11434"
+  LOG_LEVEL: "INFO"

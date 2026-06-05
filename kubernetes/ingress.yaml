@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: australiajobseeker-ingress
+  namespace: australiajobseeker
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 8501
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: app-internal
+            port:
+              number: 8000
+      - path: /a2a
+        pathType: Prefix
+        backend:
+          service:
+            name: app-internal
+            port:
+              number: 9999
+      - path: /ollama
+        pathType: Prefix
+        backend:
+          service:
+            name: ollama
+            port:
+              number: 11434

@@ -1,3 +1,4 @@
+import asyncio
 from tools.job_details_scraper import (
     get_job_description,
     get_job_descriptions
@@ -6,9 +7,9 @@ from tools.job_details_scraper import (
 
 def enrich_job(job):
 
-    full_description = get_job_description(
+    full_description = asyncio.run(get_job_description(
         job["url"]
-    )
+    ))
 
     enriched_job = {
         **job,
@@ -24,7 +25,7 @@ def enrich_jobs(jobs):
         for job in jobs
         if job.get("url")
     ]
-    descriptions = get_job_descriptions(job_urls)
+    descriptions = asyncio.run(get_job_descriptions(job_urls))
 
     enriched_jobs = []
 

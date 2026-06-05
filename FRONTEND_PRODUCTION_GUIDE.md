@@ -199,7 +199,7 @@ python -m uvicorn api.main:app --reload --port 8000
 ollama serve
 
 # Start frontend
-$env:BACKEND_URL="http://127.0.0.1:8000"; python -m streamlit run frontend/app.py```
+$env:BACKEND_URL="http://127.0.0.1:8000"; python -m streamlit run frontend/app.py
 
 ## Future Enhancements
 

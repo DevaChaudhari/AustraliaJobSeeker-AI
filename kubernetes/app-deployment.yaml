@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: australiajobseeker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: australiajobseeker-app
+  template:
+    metadata:
+      labels:
+        app: australiajobseeker-app
+    spec:
+      containers:
+      - name: app
+        image: devachaudhari/australiajobseeker-ai:latest
+        imagePullPolicy: Always
+        command: ["python", "-m", "A2A.main"]
+        ports:
+        - containerPort: 9999
+          name: a2a
+        - containerPort: 8000
+          name: api
+        envFrom:
+        - configMapRef:
+            name: app-config
+        volumeMounts:
+        - name: app-data
+          mountPath: /app/data
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9999
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9999
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: app-data
+        persistentVolumeClaim:
+          claimName: app-data-pvc

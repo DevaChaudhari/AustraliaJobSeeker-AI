@@ -2,8 +2,8 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
+
 from fastmcp import FastMCP
-import asyncio
 from agents.cover_letter_agent import generate_cover_letter
 from tools.job_details_scraper import get_job_description, get_job_descriptions
 from agents.resume_agent import tailor_resume
@@ -103,5 +103,3 @@ async def check_job_visa_eligibility(job_description: str, visa_type: str) -> di
         visa_type=visa_type
     )
 
-if __name__ == "__main__":
-    asyncio.run(mcp())
