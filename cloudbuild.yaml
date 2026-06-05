@@ -3,7 +3,7 @@
     args:
       - 'build'
       - '-f'
-      - 'Docker/Dockerfile'
+      - 'Dockerfile'
       - '-t'
       - 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/app:$COMMIT_SHA'
       - '.'
@@ -21,5 +21,11 @@
       - '--allow-unauthenticated'
       - '--port=8080'
       - '--set-env-vars=GROQ_API_KEY=$_GROQ_API_KEY'
+    secretEnv: ['_GROQ_API_KEY']
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/GROQ_API_KEY/versions/latest
+      env: '_GROQ_API_KEY'
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/app:$COMMIT_SHA'
