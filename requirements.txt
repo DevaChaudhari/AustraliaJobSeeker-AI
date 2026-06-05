@@ -1,12 +1,12 @@
-.
-
 langchain
 langgraph
 langchain-community
 langchain-ollama
+langchain-anthropic
+langchain-openai
 
 fastapi
-uvicorn
+uvicorn[standard]
 
 streamlit
 
@@ -25,5 +25,10 @@ requests
 python-docx
 
 pypdf
+
 fastmcp
 
+httpx
+aiohttp
+beautifulsoup4
+lxml

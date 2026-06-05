@@ -6,3 +6,4 @@ nodejs/
 nodejs.zip
 node-index.json
 .vscode/
+.env/
