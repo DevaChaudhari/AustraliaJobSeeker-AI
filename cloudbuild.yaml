@@ -1,7 +1,12 @@
-@"
-steps:
+﻿steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-f', 'Docker/Dockerfile', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/app:$COMMIT_SHA', '.']
+    args:
+      - 'build'
+      - '-f'
+      - 'Docker/Dockerfile'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/app:$COMMIT_SHA'
+      - '.'
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/app:$COMMIT_SHA']
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -15,6 +20,6 @@ steps:
       - '--platform=managed'
       - '--allow-unauthenticated'
       - '--port=8080'
+      - '--set-env-vars=GROQ_API_KEY=$_GROQ_API_KEY'
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/app:$COMMIT_SHA'
-"@ | Out-File -FilePath cloudbuild.yaml -Encoding utf8
