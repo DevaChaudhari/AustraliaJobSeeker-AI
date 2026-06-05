@@ -70,8 +70,17 @@ async def search_seek(role: str, location: str, max_pages: int = None, max_jobs:
     async with async_playwright() as p:
 
         browser = await p.chromium.launch(
-            headless=True
-        )
+        headless=True,
+        args=[
+        "--no-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--single-process",
+        "--no-zygote",
+        "--disable-extensions",
+        "--disable-setuid-sandbox",
+        ]
+    )
 
         page = await browser.new_page()
 
