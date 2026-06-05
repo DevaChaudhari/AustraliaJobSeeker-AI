@@ -1,4 +1,5 @@
 ﻿steps:
+  # ── BACKEND ──────────────────────────────────────────────
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -7,8 +8,10 @@
       - '-t'
       - 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/app:$COMMIT_SHA'
       - '.'
+
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/app:$COMMIT_SHA']
+
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -22,8 +25,35 @@
       - '--port=8080'
       - '--set-env-vars=GROQ_API_KEY=$_GROQ_API_KEY'
 
+  # ── FRONTEND ─────────────────────────────────────────────
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'frontend/Dockerfile'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/frontend:$COMMIT_SHA'
+      - './frontend'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/frontend:$COMMIT_SHA']
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'australiajobseeker-frontend'
+      - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/frontend:$COMMIT_SHA'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--set-env-vars=BACKEND_URL=https://australiajobseeker-ai-952176467939.us-central1.run.app'
+
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/app:$COMMIT_SHA'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/australiajobseeker-ai/frontend:$COMMIT_SHA'
 
 options:
   logging: CLOUD_LOGGING_ONLY
