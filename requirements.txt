@@ -1,9 +1,7 @@
 langchain
 langgraph
 langchain-community
-langchain-ollama
-langchain-anthropic
-langchain-openai
+langchain-groq
 
 fastapi
 uvicorn[standard]
@@ -18,8 +16,6 @@ python-dotenv
 
 langsmith
 
-ollama
-
 requests
 
 python-docx
@@ -29,6 +25,5 @@ pypdf
 fastmcp
 
 httpx
-aiohttp
 beautifulsoup4
 lxml

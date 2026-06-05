@@ -1,9 +1,10 @@
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
+import os
 
-
-llm = ChatOllama(
-    model="llama3:8b",
-    temperature=0
+llm = ChatGroq(
+    model="llama3-8b-8192",
+    temperature=0,
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
 
@@ -34,9 +35,7 @@ User Query:
 {user_query}
 """
 
-    response = llm.invoke(
-        prompt
-    )
+    response = llm.invoke(prompt)
 
     return (
         response.content

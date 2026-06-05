@@ -195,8 +195,9 @@ frontend/app.py
 # Start backend (separate terminal)
 python -m uvicorn api.main:app --reload --port 8000
 
-# Start Ollama (if needed)
-ollama serve
+# Start Groq service (if needed)
+# Ensure GROQ_API_KEY is set in your environment
+# and your app is configured to use the Groq SDK.
 
 # Start frontend
 $env:BACKEND_URL="http://127.0.0.1:8000"; python -m streamlit run frontend/app.py

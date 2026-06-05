@@ -4,12 +4,13 @@ services:
       context: ..
       dockerfile: Docker/Dockerfile
     ports:
-      - "9999:9999"
       - "8000:8000"
     environment:
-      - OLLAMA_HOST=http://ollama:11434
-    depends_on:
-      - ollama
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - LANGCHAIN_TRACING_V2=false
+      - SEEK_MAX_PAGES=1
+      - SEEK_MAX_JOBS=10
+      - MAX_RESPONSE_JOBS=10
     volumes:
       - ../data:/app/data
     networks:
@@ -31,16 +32,6 @@ services:
       - app
     volumes:
       - ../data:/app/data
-    networks:
-      - australiajobseeker
-
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    command: ollama serve
     networks:
       - australiajobseeker
 

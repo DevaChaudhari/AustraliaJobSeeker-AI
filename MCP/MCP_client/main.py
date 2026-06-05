@@ -3,7 +3,7 @@ import json
 import os
 from dotenv import load_dotenv
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, ToolMessage, SystemMessage
 
 load_dotenv()
@@ -22,7 +22,11 @@ async def main():
     named_tools = {tool.name: tool for tool in tools}
     print("Available tools:", list(named_tools.keys()))
 
-    llm = ChatOllama(model="llama3.2")
+    llm = ChatGroq(
+        model="llama3-8b-8192",
+        temperature=0,
+        api_key=os.getenv("GROQ_API_KEY")
+    )
     llm_with_tools = llm.bind_tools(tools)
 
     messages = [

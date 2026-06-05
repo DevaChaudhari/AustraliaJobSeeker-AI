@@ -1,13 +1,10 @@
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 import os
 
-# Ollama host configurable for Docker/K8s deployment
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
-
-llm = ChatOllama(
-    model="llama3:8b",
+llm = ChatGroq(
+    model="llama3-8b-8192",
     temperature=0,
-    base_url=OLLAMA_HOST
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
 
@@ -37,9 +34,7 @@ RESUME:
 """
 
     try:
-        response = llm.invoke(
-            prompt
-        )
+        response = llm.invoke(prompt)
         tailored_resume = response.content
     except Exception as e:
         return f"LLM error: {e}"
