@@ -7,6 +7,8 @@ from agents.ranking_agent import rank_jobs
 from agents.resume_agent import tailor_resume
 from agents.cover_letter_agent import generate_cover_letter
 from Langsmith.integration import get_graph_config
+from fastapi import FastAPI, HTTPException
+import traceback
 
 
 app = FastAPI(title="AustraliaJobSeeker AI")
@@ -25,7 +27,9 @@ MAX_RESPONSE_JOBS = _env_int("MAX_RESPONSE_JOBS", 10)
 
 
 def _load_default_resume() -> str:
-    with open("data/sample_resume.txt", "r", encoding="utf-8") as f:
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = os.path.join(base_dir, "data", "sample_resume.txt")
+    with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
 
@@ -120,26 +124,50 @@ def search_jobs(data: dict):
 
 @app.post("/generate-resume")
 def generate_resume(data: dict):
-    resume_text = data.get("resume_text") or _load_default_resume()
-
-    tailored_resume = tailor_resume(
-        resume_text=resume_text,
-        job_description=data["job_description"]
-    )
-
-    return {"resume": tailored_resume}
+    try:
+        resume_text = data.get("resume_text") or _load_default_resume()
+        if "job_description" not in data:
+            raise HTTPException(status_code=400, detail="job_description is required")
+        
+        tailored_resume = tailor_resume(
+            resume_text=resume_text,
+            job_description=data["job_description"]
+        )
+        return {"resume": tailored_resume}
+    except HTTPException:
+        raise
+    except Exception as e:
+        traceback.print_exc()  # this prints to Cloud Run logs
+        raise HTTPException(status_code=500, detail=str(e))
+    
 
 
 @app.post("/generate-cover-letter")
 def create_cover_letter(data: dict):
-    resume_text = data.get("resume_text") or _load_default_resume()
+    try:
+        # Validate required fields
+        required = ["job_description", "company", "title"]
+        missing = [f for f in required if f not in data]
+        if missing:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Missing required fields: {missing}"
+            )
 
-    cover_letter = generate_cover_letter(
-        resume_text=resume_text,
-        job_description=data["job_description"],
-        company=data["company"],
-        title=data["title"]
-    )
+        resume_text = data.get("resume_text") or _load_default_resume()
 
-    return {"cover_letter": cover_letter}
+        cover_letter = generate_cover_letter(
+            resume_text=resume_text,
+            job_description=data["job_description"],
+            company=data["company"],
+            title=data["title"]
+        )
+
+        return {"cover_letter": cover_letter}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        traceback.print_exc()  # shows full error in Cloud Run logs
+        raise HTTPException(status_code=500, detail=str(e))
 
