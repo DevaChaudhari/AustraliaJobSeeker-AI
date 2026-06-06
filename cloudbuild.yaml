@@ -1,4 +1,9 @@
-﻿steps:
+﻿availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/GROQ_API_KEY/versions/latest
+      env: GROQ_API_KEY
+
+steps:
   # ── BACKEND ──────────────────────────────────────────────
   - name: 'gcr.io/cloud-builders/docker'
     args:
@@ -23,7 +28,7 @@
       - '--platform=managed'
       - '--allow-unauthenticated'
       - '--port=8080'
-      - '--set-env-vars=GROQ_API_KEY=$_GROQ_API_KEY'
+      - '--set-secrets=GROQ_API_KEY=GROQ_API_KEY:latest'
 
   # ── FRONTEND ─────────────────────────────────────────────
   - name: 'gcr.io/cloud-builders/docker'
