@@ -1,16 +1,9 @@
 from langchain_groq import ChatGroq
 import os
 
-groq_api_key = os.getenv("GROQ_API_KEY")
-if not groq_api_key:
-    print("WARNING: GROQ_API_KEY environment variable not found!")
-else:
-    print(f"DEBUG: GROQ_API_KEY loaded, key starts with: {groq_api_key[:10]}...")
-
 llm = ChatGroq(
     model="llama3-8b-8192",
     temperature=0,
-    api_key=groq_api_key
 )
 
 
@@ -45,11 +38,7 @@ RESUME:
     except Exception as e:
         return f"LLM error: {e}"
 
-    with open(
-        "data/generated_resume.txt",
-        "w",
-        encoding="utf-8"
-    ) as f:
+    with open("/tmp/generated_resume.txt", "w", encoding="utf-8") as f:
         f.write(tailored_resume)
 
     return tailored_resume

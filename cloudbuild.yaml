@@ -23,7 +23,7 @@
       - '--platform=managed'
       - '--allow-unauthenticated'
       - '--port=8080'
-      - '--set-secrets=GROQ_API_KEY=GROQ_API_KEY:latest'
+      - '--set-env-vars=GROQ_API_KEY=$_GROQ_API_KEY'
 
   # ── FRONTEND ─────────────────────────────────────────────
   - name: 'gcr.io/cloud-builders/docker'
