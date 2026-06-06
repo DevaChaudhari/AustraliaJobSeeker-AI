@@ -1,19 +1,18 @@
 from langchain_groq import ChatGroq
 import os
 
-llm = ChatGroq(
-    model="llama3-8b-8192",
-    temperature=0,
-    api_key=os.getenv("GROQ_API_KEY")
-)
+GROQ_MODEL = "llama-3.1-8b-instant"
 
 
-def route_query(
-    user_query: str
-):
+def _get_llm():
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY environment variable is not set.")
+    return ChatGroq(model=GROQ_MODEL, temperature=0, api_key=api_key)
 
-    prompt = f"""
-You are a supervisor agent.
+
+def route_query(user_query: str):
+    prompt = f"""You are a supervisor agent.
 
 Available agents:
 
@@ -34,11 +33,6 @@ Return ONLY ONE agent name.
 User Query:
 {user_query}
 """
-
+    llm = _get_llm()
     response = llm.invoke(prompt)
-
-    return (
-        response.content
-        .strip()
-        .lower()
-    )
+    return response.content.strip().lower()
