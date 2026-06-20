@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -7,11 +7,11 @@ from agents.ranking_agent import rank_jobs
 from agents.resume_agent import tailor_resume
 from agents.cover_letter_agent import generate_cover_letter
 from Langsmith.integration import get_graph_config
-from fastapi import FastAPI, HTTPException
 import traceback
 
 
 app = FastAPI(title="AustraliaJobSeeker AI")
+
 
 
 def _env_int(name: str, default: int) -> int:

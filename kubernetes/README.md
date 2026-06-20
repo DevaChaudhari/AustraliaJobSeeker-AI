@@ -1,264 +1,288 @@
-# Australia Job Seeker AI - Kubernetes Deployment Guide
+# Australia Job Seeker AI - Kubernetes Deployment Guide ☸️
 
-## Prerequisites
-- Kubernetes cluster running (minikube, Docker Desktop with K8s, or cloud provider)
-- kubectl installed and configured
-- Docker image built and available: `australiajobseeker-ai:latest`
-- (Optional) NGINX Ingress Controller for Ingress routing
+> Complete guide for deploying AustraliaJobSeeker AI on Kubernetes with production-ready configurations.
 
-## Architecture
+![Kubernetes](https://img.shields.io/badge/Kubernetes-1.24%2B-blue) ![Docker](https://img.shields.io/badge/Docker-Ready-brightgreen)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ Frontend (Streamlit - Port 8501)                            │
-│ - Resume upload & job search UI                             │
-│ - Talks to Backend API at http://app:8000                   │
-└─────────────────┬───────────────────────────────────────────┘
-                  │ (BACKEND_URL=http://app:8000)
-                  ▼
-┌─────────────────────────────────────────────────────────────┐
-│ App (A2A Server - Ports 9999/8000)                          │
-│ - Port 9999: A2A API                                        │
-│ - Port 8000: Backend API (search, resume, cover letter)     │
-│ - Connects to Ollama at http://ollama:11434                 │
-└─────────────────┬───────────────────────────────────────────┘
-                  │ (OLLAMA_HOST=http://ollama:11434)
-                  ▼
-┌─────────────────────────────────────────────────────────────┐
-│ Ollama (Language Model Server - Port 11434)                 │
-│ - Serves LLM inference for AI features                      │
-└─────────────────────────────────────────────────────────────┘
-```
+## 📋 Prerequisites
 
-## Files Overview
+- **Kubernetes Cluster**: minikube, Docker Desktop with K8s, or cloud provider (EKS, GKE, AKS)
+- **kubectl**: Installed and configured (v1.24+)
+- **Docker Image**: Built locally: `australiajobseeker-ai:latest`
+- **Storage**: Persistent Volume support (local-path or cloud provider)
+- **(Optional) Ingress Controller**: NGINX Ingress for unified routing
 
-- **namespace.yaml** — Creates isolated namespace `australiajobseeker`
-- **configmap.yaml** — Environment config (OLLAMA_HOST, LOG_LEVEL)
-- **pvc.yaml** — Persistent storage for app data (10Gi) and Ollama models (20Gi)
-- **app-deployment.yaml** — A2A backend (2 replicas, command: `python -m A2A.main`)
-- **app-service.yaml** — LoadBalancer + ClusterIP services for backend
-- **frontend-deployment.yaml** — Streamlit frontend (2 replicas, command: `streamlit run frontend/app.py`)
-- **frontend-service.yaml** — LoadBalancer service for frontend (port 8501)
-- **ollama-deployment.yaml** — Ollama server (1 replica, persistent volume)
-- **ollama-service.yaml** — ClusterIP + LoadBalancer services for Ollama
-- **ingress.yaml** — (Optional) NGINX Ingress for unified routing
+## 🏗️ Architecture Overview
 
-## Deployment Steps
+The deployment consists of three main tiers running in Kubernetes:
 
-### 1. Prepare Docker Image
+- **Frontend Tier**: Streamlit web UI (2 replicas) on port 8501
+- **Backend Tier**: A2A + FastAPI servers (2 replicas) on ports 8000 & 9999  
+- **Inference Tier**: Ollama LLM server (1 replica) on port 11434
 
-**If using minikube:**
+All components share a ConfigMap for environment config and use Persistent Volumes for data storage.
+
+## 📄 Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `namespace.yaml` | Create `australiajobseeker` namespace |
+| `configmap.yaml` | Environment variables & API config |
+| `pvc.yaml` | Persistent volumes (app: 10Gi, ollama: 20Gi) |
+| `app-deployment.yaml` | Backend: 2 replicas, A2A + FastAPI |
+| `app-service.yaml` | Backend service exposure |
+| `frontend-deployment.yaml` | Frontend: 2 replicas, Streamlit |
+| `frontend-service.yaml` | Frontend service exposure |
+| `ollama-deployment.yaml` | Ollama: 1 replica with persistent storage |
+| `ollama-service.yaml` | Ollama service exposure |
+| `ingress.yaml` | NGINX Ingress (optional, production) |
+| `deploy.sh` | Automated deployment script |
+
+## 🚀 Deployment Steps
+
+### Step 1: Build Docker Image
+
 ```bash
-# Build locally and load into minikube
-docker build -t australiajobseeker-ai:latest ..
+# From project root
+docker build -t australiajobseeker-ai:latest .
+
+# For minikube: Load image
 minikube image load australiajobseeker-ai:latest
+
+# For cloud registries (example: GCR)
+docker tag australiajobseeker-ai:latest gcr.io/YOUR-PROJECT/australiajobseeker-ai:latest
+docker push gcr.io/YOUR-PROJECT/australiajobseeker-ai:latest
 ```
 
-**If using Docker Desktop with K8s:**
-```bash
-# Build locally (automatically available)
-docker build -t australiajobseeker-ai:latest ..
-```
-
-### 2. Deploy All Resources
+### Step 2: Deploy to Kubernetes
 
 ```bash
-cd F:\AustraliaJobSeeker-AI\Kubernetes
+cd kubernetes/
 
-# Deploy all manifests at once
+# Option A: Automated (recommended)
+chmod +x deploy.sh && ./deploy.sh
+
+# Option B: Deploy all at once
 kubectl apply -f .
 
-# OR deploy step-by-step
-kubectl apply -f namespace.yaml
+# Option C: Step-by-step deployment
+kubectl apply -f namespace.yaml && sleep 2
 kubectl apply -f configmap.yaml
 kubectl apply -f pvc.yaml
-kubectl apply -f app-deployment.yaml
-kubectl apply -f app-service.yaml
-kubectl apply -f frontend-deployment.yaml
-kubectl apply -f frontend-service.yaml
-kubectl apply -f ollama-deployment.yaml
-kubectl apply -f ollama-service.yaml
-# kubectl apply -f ingress.yaml  # Only if NGINX Ingress is installed
+kubectl apply -f app-deployment.yaml app-service.yaml
+kubectl apply -f frontend-deployment.yaml frontend-service.yaml
+kubectl apply -f ollama-deployment.yaml ollama-service.yaml
 ```
 
-### 3. Verify Deployment
+### Step 3: Verify Deployment
 
 ```bash
-# Check namespace
-kubectl get namespace
-
-# Check all resources
-kubectl get all -n australiajobseeker
-
-# Check pods
-kubectl get pods -n australiajobseeker
+# Monitor pods starting (Ctrl+C to exit)
 kubectl get pods -n australiajobseeker --watch
 
-# Check services
-kubectl get svc -n australiajobseeker
-
-# Check persistent volumes
-kubectl get pvc -n australiajobseeker
+# Check all resources
+kubectl get all -n australiajobseeker -o wide
 
 # Check pod logs
-kubectl logs -n australiajobseeker -l app=australiajobseeker-frontend --tail=50 -f
-kubectl logs -n australiajobseeker -l app=australiajobseeker-app --tail=50 -f
-kubectl logs -n australiajobseeker -l app=ollama --tail=50 -f
+kubectl logs -n australiajobseeker -l app=frontend -f
 ```
 
-### 4. Access Your Application
+## 🌐 Accessing Services
 
-**Using LoadBalancer (if available):**
+## 🌐 Accessing Services
+
+### Local Development (Port Forwarding)
+
+Open separate terminals:
+
 ```bash
-# Get external IPs
+# Frontend (Streamlit) - http://localhost:8501
+kubectl port-forward -n australiajobseeker svc/frontend-service 8501:8501
+
+# Backend API - http://localhost:8000/docs
+kubectl port-forward -n australiajobseeker svc/app-service 8000:8000
+
+# A2A Server - http://localhost:9999
+kubectl port-forward -n australiajobseeker svc/app-service 9999:9999
+
+# Ollama - http://localhost:11434
+kubectl port-forward -n australiajobseeker svc/ollama-service 11434:11434
+```
+
+### Cloud LoadBalancer (Production)
+
+```bash
+# Get external endpoints
 kubectl get svc -n australiajobseeker
 
-# Frontend: http://<FRONTEND_EXTERNAL_IP>:8501
-# A2A API: http://<APP_EXTERNAL_IP>:9999
-# Backend API: http://<APP_EXTERNAL_IP>:8000
-# Ollama: http://<OLLAMA_EXTERNAL_IP>:11434
+# Access using EXTERNAL-IP:PORT
 ```
 
-**Using Port Forwarding (local testing):**
+### NGINX Ingress
+
 ```bash
-# Terminal 1 - Frontend
-kubectl port-forward -n australiajobseeker svc/frontend 8501:8501
+# Enable on minikube
+minikube addons enable ingress
 
-# Terminal 2 - Backend API
-kubectl port-forward -n australiajobseeker svc/app 8000:8000
+# Deploy ingress
+kubectl apply -f ingress.yaml
 
-# Terminal 3 - A2A API
-kubectl port-forward -n australiajobseeker svc/app 9999:9999
-
-# Terminal 4 - Ollama
-kubectl port-forward -n australiajobseeker svc/ollama 11434:11434
-
-# Then access at:
-# Frontend: http://localhost:8501
-# Backend API: http://localhost:8000
-# A2A API: http://localhost:9999
-# Ollama: http://localhost:11434
+# Get ingress endpoint
+kubectl get ingress -n australiajobseeker
 ```
 
-**Using Ingress (if installed):**
-```bash
-# Install NGINX Ingress Controller (if not already installed)
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm install ingress-nginx ingress-nginx/ingress-nginx
+## 📊 Monitoring & Management
 
-# Access single endpoint
-# Frontend: http://localhost/
-# Backend API: http://localhost/api
-# A2A API: http://localhost/a2a
-# Ollama: http://localhost/ollama
+### Pod Logs
+
+```bash
+# Stream frontend logs
+kubectl logs -n australiajobseeker -l app=frontend -f --tail=100
+
+# Stream app logs
+kubectl logs -n australiajobseeker -l app=app -f --tail=100
+
+# Get previous logs (crashed pod)
+kubectl logs <POD-NAME> -n australiajobseeker --previous
 ```
 
-### 5. Common Operations
+### Pod Operations
 
 ```bash
-# Scale frontend to 3 replicas
-kubectl scale deployment frontend -n australiajobseeker --replicas=3
+# Shell access for debugging
+kubectl exec -it <POD-NAME> -n australiajobseeker -- /bin/bash
 
-# Scale app to 4 replicas
-kubectl scale deployment app -n australiajobseeker --replicas=4
+# Get pod details
+kubectl describe pod <POD-NAME> -n australiajobseeker
 
-# View real-time resource usage
-kubectl top nodes
-kubectl top pods -n australiajobseeker
-
-# Restart a pod
-kubectl delete pod <pod-name> -n australiajobseeker
-
-# View pod details
-kubectl describe pod <pod-name> -n australiajobseeker
-
-# Exec into a pod (debugging)
-kubectl exec -it <pod-name> -n australiajobseeker -- /bin/bash
-
-# Check events
+# View events
 kubectl get events -n australiajobseeker
 ```
 
-### 6. Update Deployment
+### Resource Monitoring
 
 ```bash
-# Update image
-kubectl set image deployment/app app=australiajobseeker-ai:v2 -n australiajobseeker
-kubectl set image deployment/frontend frontend=australiajobseeker-ai:v2 -n australiajobseeker
+# Pod resource usage
+kubectl top pods -n australiajobseeker
 
-# Rollback
-kubectl rollout undo deployment/app -n australiajobseeker
-kubectl rollout undo deployment/frontend -n australiajobseeker
-
-# Check rollout status
-kubectl rollout status deployment/app -n australiajobseeker
+# Node resource usage
+kubectl top nodes
 ```
 
-### 7. Delete Deployment
+## ⚙️ Configuration & Scaling
+
+### Update Environment Variables
 
 ```bash
-# Delete entire namespace (deletes all resources)
+# Edit ConfigMap
+kubectl edit configmap app-config -n australiajobseeker
+
+# Apply and restart pods
+kubectl rollout restart deployment/app-deployment -n australiajobseeker
+```
+
+### Manage Secrets
+
+```bash
+# Create API key secret
+kubectl create secret generic groq-secret \
+  --from-literal=api-key=YOUR-KEY \
+  -n australiajobseeker
+
+# Reference in deployment:
+# env:
+# - name: GROQ_API_KEY
+#   valueFrom:
+#     secretKeyRef:
+#       name: groq-secret
+#       key: api-key
+```
+
+### Scale Deployments
+
+```bash
+# Scale frontend
+kubectl scale deployment frontend-deployment \
+  --replicas=3 -n australiajobseeker
+
+# Scale backend
+kubectl scale deployment app-deployment \
+  --replicas=5 -n australiajobseeker
+
+# Auto-scaling (HPA)
+kubectl autoscale deployment app-deployment \
+  --min=2 --max=5 --cpu-percent=75 \
+  -n australiajobseeker
+```
+
+## 🔧 Troubleshooting
+
+### Pod Stuck in Pending
+
+```bash
+# Check pod events and resource availability
+kubectl describe pod <POD-NAME> -n australiajobseeker
+kubectl get nodes
+kubectl top nodes
+```
+
+### Pod CrashLoopBackOff
+
+```bash
+# Check logs for errors
+kubectl logs <POD-NAME> -n australiajobseeker --previous
+```
+
+### Service Not Accessible
+
+```bash
+# Verify service and endpoints exist
+kubectl get svc -n australiajobseeker
+kubectl get endpoints -n australiajobseeker
+
+# Test DNS and connectivity from pod
+kubectl exec -it <POD> -n australiajobseeker -- nslookup app-service
+kubectl exec -it <POD> -n australiajobseeker -- curl http://app-service:8000/health
+```
+
+### Storage Issues
+
+```bash
+# Check PVC status
+kubectl get pvc -n australiajobseeker
+kubectl describe pvc <PVC-NAME> -n australiajobseeker
+
+# Check available storage
+kubectl get pv
+```
+
+## 📚 Management Operations
+
+```bash
+# Update deployment image
+kubectl set image deployment/app-deployment \
+  app=australiajobseeker-ai:v2 -n australiajobseeker
+
+# Rollback to previous version
+kubectl rollout undo deployment/app-deployment -n australiajobseeker
+
+# Restart deployment
+kubectl rollout restart deployment/app-deployment -n australiajobseeker
+
+# Backup all resources
+kubectl get all -n australiajobseeker -o yaml > backup.yaml
+
+# Delete namespace (deletes all resources)
 kubectl delete namespace australiajobseeker
-
-# OR delete specific resources
-kubectl delete -f .
 ```
 
-## Resource Requests & Limits
+## 🔗 Related Documentation
 
-**Frontend Pod:**
-- CPU Request: 100m | Limit: 250m
-- Memory Request: 256Mi | Limit: 512Mi
+- [Main README](../README.md)
+- [Frontend Guide](../FRONTEND_PRODUCTION_GUIDE.md)
+- [Cloud Run Deployment](../CLOUD_RUN_DEPLOYMENT.md)
+- [A2A Server](../A2A/README.md)
 
-**App Pod:**
-- CPU Request: 250m | Limit: 500m
-- Memory Request: 512Mi | Limit: 1Gi
+---
 
-**Ollama Pod:**
-- CPU Request: 1000m | Limit: 2000m
-- Memory Request: 2Gi | Limit: 4Gi
-
-Adjust in deployment manifests based on cluster capacity.
-
-## Troubleshooting
-
-### Pods Stuck in Pending
-```bash
-kubectl describe pod <pod-name> -n australiajobseeker
-# Check: PVC not bound, insufficient resources, image pull errors
-```
-
-### Pod Crashes (CrashLoopBackOff)
-```bash
-kubectl logs <pod-name> -n australiajobseeker
-# Common: missing dependencies, bad environment variables, port conflicts
-```
-
-### High Memory Usage
-```bash
-kubectl top pods -n australiajobseeker --sort-by=memory
-# Increase `limits.memory` in deployment manifests
-```
-
-### Connection Errors Between Services
-```bash
-# Verify service DNS is working
-kubectl exec -it <pod-name> -n australiajobseeker -- nslookup app
-kubectl exec -it <pod-name> -n australiajobseeker -- nslookup ollama
-
-# Check network policies
-kubectl get networkpolicies -n australiajobseeker
-```
-
-## Production Considerations
-
-- Use **Horizontal Pod Autoscaler (HPA)** for auto-scaling based on CPU/memory
-- Enable **Resource Quotas** to limit namespace resource consumption
-- Use **Network Policies** to restrict traffic between pods
-- Implement **Liveness and Readiness Probes** (already included)
-- Use **ConfigMaps** and **Secrets** for configuration management
-- Enable **Persistent Volumes** for data durability
-- Set up **Ingress** with TLS certificates for HTTPS
-- Use **StatefulSets** for stateful components if needed
-- Enable **Pod Disruption Budgets** for high availability
-- Monitor with **Prometheus + Grafana** or similar
+**Kubernetes deployment guide for AustraliaJobSeeker AI**
