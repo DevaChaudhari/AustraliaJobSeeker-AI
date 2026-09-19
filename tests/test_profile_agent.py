@@ -1,31 +1,21 @@
-from tools.seek_scraper import search_seek
-from agents.job_enrichment_agent import enrich_job
-from agents.profile_agent import (
-    calculate_match_score
-)
+from australiajobseeker.agents.profile_agent import calculate_match_score, extract_skills
 
-with open(
-    "data/sample_resume.txt",
-    "r",
-    encoding="utf-8"
-) as f:
 
-    resume_text = f.read()
+def test_extract_skills_is_case_insensitive():
+    skills = extract_skills("Built APIs with Python and FastAPI on Docker")
+    assert {"python", "fastapi", "docker"} <= set(skills)
 
-jobs = search_seek(
-    role="AI Engineer",
-    location="All Adelaide SA"
-)
 
-job = enrich_job(
-    jobs[0]
-)
+def test_match_score_reports_matched_and_missing_skills():
+    result = calculate_match_score(
+        resume_text="Python and Docker",
+        job_description="Python, Docker and AWS required",
+    )
+    assert set(result["matched_skills"]) == {"python", "docker"}
+    assert result["missing_skills"] == ["aws"]
+    assert result["match_score"] == 66
 
-result = calculate_match_score(
-    resume_text,
-    job["full_description"]
-)
 
-print("\nMATCH RESULT\n")
-
-print(result)
+def test_match_score_is_zero_when_job_lists_no_known_skills():
+    result = calculate_match_score("Python", "Friendly team, great coffee")
+    assert result["match_score"] == 0
