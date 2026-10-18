@@ -1,7 +1,8 @@
 from langchain_groq import ChatGroq
 import os
 
-GROQ_MODEL = "llama-3.1-8b-instant"
+# Groq retires models periodically; override with the GROQ_MODEL environment variable.
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 
 def _get_llm(temperature=0):
@@ -34,7 +35,13 @@ RESUME:
 {resume_text}
 """
     llm = _get_llm(temperature=0)
-    response = llm.invoke(prompt)
+    # gpt-oss models occasionally return empty content; retry, then fail loudly.
+    for _ in range(3):
+        response = llm.invoke(prompt)
+        if response.content and response.content.strip():
+            break
+    else:
+        raise RuntimeError("The model returned an empty response. Please try again.")
     tailored_resume = response.content
 
     try:

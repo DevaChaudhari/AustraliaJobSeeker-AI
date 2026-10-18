@@ -2,7 +2,7 @@
 # Build the image, push it to ECR and create/update the CloudFormation stack.
 #
 # Usage: GROQ_API_KEY=... ./deploy/aws/deploy.sh
-# Optional: AWS_REGION (default ap-southeast-2), STACK_NAME, VPC_ID, SUBNET_IDS (comma-separated),
+# Optional: IMAGE_TAG (default: git short hash), AWS_REGION (default ap-southeast-2), STACK_NAME, VPC_ID, SUBNET_IDS (comma-separated),
 #           ALLOWED_ORIGINS (Amplify URL), BUDGET_EMAIL, CAPACITY_PROVIDER (FARGATE_SPOT|FARGATE)
 set -euo pipefail
 
@@ -12,7 +12,7 @@ STACK="${STACK_NAME:-australiajobseeker-ai}"
 
 ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
 REPO_URI="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${STACK}"
-TAG="$(git rev-parse --short HEAD 2>/dev/null || date +%s)"
+TAG="${IMAGE_TAG:-$(git rev-parse --short HEAD 2>/dev/null || date +%s)}"
 IMAGE_URI="${REPO_URI}:${TAG}"
 
 # Default VPC + its subnets unless overridden

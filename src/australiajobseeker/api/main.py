@@ -20,7 +20,6 @@ load_dotenv()
 
 app = FastAPI(title="AustraliaJobSeeker AI")
 
-# Comma-separated list of allowed browser origins, e.g. the Amplify app URL.
 ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv("ALLOWED_ORIGINS", "*").split(",")
@@ -138,9 +137,6 @@ def _run_search(data: dict) -> dict:
     }
 
 
-# Searches scrape and call an LLM per job, which can outlast CloudFront's 60s
-# origin timeout. The async endpoints let the browser start a search and poll.
-# State is in-memory, so this assumes a single running task.
 _SEARCH_TTL_SECONDS = 3600
 _search_executor = ThreadPoolExecutor(max_workers=2)
 _search_jobs: dict[str, dict] = {}

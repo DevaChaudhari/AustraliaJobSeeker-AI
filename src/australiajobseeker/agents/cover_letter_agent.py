@@ -1,7 +1,7 @@
 from langchain_groq import ChatGroq
 import os
 
-GROQ_MODEL = "llama-3.1-8b-instant"
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 
 def _get_llm(temperature=0.3):
@@ -48,7 +48,13 @@ Requirements:
 Return only the cover letter.
 """
     llm = _get_llm(temperature=0.3)
-    response = llm.invoke(prompt)
+    # gpt-oss models occasionally return empty content; retry, then fail loudly.
+    for _ in range(3):
+        response = llm.invoke(prompt)
+        if response.content and response.content.strip():
+            break
+    else:
+        raise RuntimeError("The model returned an empty response. Please try again.")
     cover_letter = response.content
 
     try:

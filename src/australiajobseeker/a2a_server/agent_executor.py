@@ -14,7 +14,6 @@ from australiajobseeker.scrapers.seek_scraper import search_seek
 class JobAssistantAgentExecutor(AgentExecutor):
 
     async def execute(self, context: RequestContext, event_queue: EventQueue):
-        # Parse the user input to extract action and params
         try:
             user_input = context.get_user_input()
             if isinstance(user_input, str):

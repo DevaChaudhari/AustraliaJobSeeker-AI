@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { CheckIcon, CloseIcon, CopyIcon, DownloadIcon } from "./Icons";
 
 interface Props {
   title: string;
   text: string;
   filename: string;
+  onClose: () => void;
 }
 
-export function GeneratedDoc({ title, text, filename }: Props) {
+export function GeneratedDoc({ title, text, filename, onClose }: Props) {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -29,19 +31,24 @@ export function GeneratedDoc({ title, text, filename }: Props) {
   };
 
   return (
-    <div className="doc">
-      <div className="row">
+    <section className="doc" aria-label={title}>
+      <div className="doc-head">
         <h4>{title}</h4>
-        <div className="actions">
-          <button type="button" onClick={copy}>
+        <div className="doc-actions">
+          <button type="button" className="btn btn-ghost btn-sm" onClick={copy}>
+            {copied ? <CheckIcon size={15} /> : <CopyIcon size={15} />}
             {copied ? "Copied" : "Copy"}
           </button>
-          <button type="button" onClick={download}>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={download}>
+            <DownloadIcon size={15} />
             Download
+          </button>
+          <button type="button" className="btn btn-icon btn-sm" onClick={onClose} aria-label={`Close ${title}`}>
+            <CloseIcon size={15} />
           </button>
         </div>
       </div>
       <pre>{text}</pre>
-    </div>
+    </section>
   );
 }
