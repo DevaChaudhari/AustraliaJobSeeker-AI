@@ -2,6 +2,8 @@ import os
 import re
 from playwright.async_api import async_playwright
 
+from australiajobseeker.scrapers.browser import CHROMIUM_ARGS
+
 DEFAULT_MAX_SEEK_PAGES = 1
 DEFAULT_MAX_SEEK_JOBS = 10
 DEFAULT_SEEK_PAGE_WAIT_MS = 3000
@@ -70,17 +72,9 @@ async def search_seek(role: str, location: str, max_pages: int = None, max_jobs:
     async with async_playwright() as p:
 
         browser = await p.chromium.launch(
-        headless=True,
-        args=[
-        "--no-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-        "--single-process",
-        "--no-zygote",
-        "--disable-extensions",
-        "--disable-setuid-sandbox",
-        ]
-    )
+            headless=True,
+            args=CHROMIUM_ARGS,
+        )
 
         page = await browser.new_page()
 

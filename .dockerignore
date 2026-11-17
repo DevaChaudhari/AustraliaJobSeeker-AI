@@ -9,3 +9,5 @@ tests/
 docs/
 deploy/
 examples/
+frontend/
+node_modules/

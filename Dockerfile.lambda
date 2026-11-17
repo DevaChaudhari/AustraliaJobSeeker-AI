@@ -1,0 +1,35 @@
+# Image for AWS Lambda. The same FastAPI app as Dockerfile, run behind the AWS Lambda Web Adapter,
+# which turns Lambda invocations into normal HTTP requests to uvicorn. No code changes needed.
+FROM python:3.10-slim
+
+# Lambda: the filesystem is read-only except /tmp, and the process does not run as root.
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+    PORT=8000 \
+    AWS_LWA_PORT=8000 \
+    AWS_LWA_READINESS_CHECK_PATH=/health \
+    AWS_LWA_ASYNC_INIT=true
+
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 /lambda-adapter /opt/extensions/lambda-adapter
+
+WORKDIR /app
+
+# Browser libraries required by Playwright's Chromium
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libnss3 libatk-bridge2.0-0 \
+    libdrm2 libxkbcommon0 libgbm1 \
+    libasound2 libxshmfence1 libgtk-3-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml ./
+COPY src/ ./src/
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir . && \
+    playwright install chromium && \
+    chmod -R a+rX /ms-playwright
+
+# Chromium and Python write caches under $HOME, which must be writable on Lambda
+ENV HOME=/tmp
+
+CMD ["sh", "-c", "uvicorn australiajobseeker.api.main:app --host 0.0.0.0 --port ${PORT}"]

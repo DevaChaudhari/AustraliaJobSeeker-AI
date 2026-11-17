@@ -2,6 +2,8 @@ import os
 
 from playwright.async_api import async_playwright
 
+from australiajobseeker.scrapers.browser import CHROMIUM_ARGS
+
 
 def _env_int(name: str, default: int):
     try:
@@ -34,7 +36,8 @@ async def get_job_description(job_url: str):
     async with async_playwright() as p:
 
         browser = await p.chromium.launch(
-            headless=True
+            headless=True,
+            args=CHROMIUM_ARGS,
         )
 
         page = await browser.new_page()
@@ -52,7 +55,8 @@ async def get_job_descriptions(job_urls: list[str]):
     async with async_playwright() as p:
 
         browser = await p.chromium.launch(
-            headless=True
+            headless=True,
+            args=CHROMIUM_ARGS,
         )
 
         page = await browser.new_page()
