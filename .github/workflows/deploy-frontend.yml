@@ -1,0 +1,73 @@
+name: Deploy frontend to Amplify
+
+# Builds frontend/ and uploads it to the existing Amplify app, so the site URL never changes.
+# AWS access comes from a short-lived OIDC role (deploy/aws/github-oidc.yaml); no keys are stored here.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/deploy-frontend.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write # to request the OIDC token for AWS
+  contents: read
+
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-southeast-2
+  AWS_ROLE_ARN: arn:aws:iam::087355356681:role/australiajobseeker-ai-github-deploy
+  AMPLIFY_APP_ID: d1ffqg8xlvl7zp
+  AMPLIFY_BRANCH: main
+  VITE_API_URL: https://kb74qjwnw6xdheb5tsxtfavdv40ymage.lambda-url.ap-southeast-2.on.aws
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+          cd dist && zip -qr ../site.zip .
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload to Amplify
+        run: |
+          read -r JOB_ID UPLOAD_URL < <(aws amplify create-deployment \
+            --app-id "$AMPLIFY_APP_ID" --branch-name "$AMPLIFY_BRANCH" \
+            --query '[jobId,zipUploadUrl]' --output text)
+          curl -sf -X PUT -H "Content-Type: application/zip" --data-binary @site.zip "$UPLOAD_URL"
+          aws amplify start-deployment --app-id "$AMPLIFY_APP_ID" --branch-name "$AMPLIFY_BRANCH" --job-id "$JOB_ID" >/dev/null
+
+          for _ in $(seq 1 60); do
+            STATUS=$(aws amplify get-job --app-id "$AMPLIFY_APP_ID" --branch-name "$AMPLIFY_BRANCH" \
+              --job-id "$JOB_ID" --query job.summary.status --output text)
+            echo "Job $JOB_ID: $STATUS"
+            case "$STATUS" in
+              SUCCEED) echo "Live at https://$AMPLIFY_BRANCH.$AMPLIFY_APP_ID.amplifyapp.com"; exit 0 ;;
+              FAILED|CANCELLED) exit 1 ;;
+            esac
+            sleep 5
+          done
+          echo "Timed out waiting for the deployment"; exit 1

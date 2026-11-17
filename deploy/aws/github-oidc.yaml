@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Lets GitHub Actions deploy the frontend to the existing Amplify app, with no AWS keys stored in GitHub
+
+# GitHub proves who it is with a short-lived OIDC token; AWS swaps it for temporary credentials.
+# Only pushes to the given branch of the given repo can assume the role, and the role can only
+# create and start deployments on the one Amplify app.
+
+Parameters:
+  GitHubRepo:
+    Type: String
+    Default: DevaChaudhari/AustraliaJobSeeker-AI
+    Description: owner/repo
+  GitHubBranch:
+    Type: String
+    Default: main
+  AmplifyAppId:
+    Type: String
+    Description: The Amplify app to deploy to, e.g. d1ffqg8xlvl7zp
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList: [sts.amazonaws.com]
+      ThumbprintList: [6938fd4d98bab03faadb97b34396831e3780aea1]
+
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-deploy"
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Ref GitHubOidcProvider
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub "repo:${GitHubRepo}:ref:refs/heads/${GitHubBranch}"
+      Policies:
+        - PolicyName: deploy-amplify-frontend
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - amplify:CreateDeployment
+                  - amplify:StartDeployment
+                  - amplify:GetJob
+                Resource:
+                  - !Sub "arn:aws:amplify:${AWS::Region}:${AWS::AccountId}:apps/${AmplifyAppId}/branches/${GitHubBranch}"
+                  - !Sub "arn:aws:amplify:${AWS::Region}:${AWS::AccountId}:apps/${AmplifyAppId}/branches/${GitHubBranch}/*"
+
+Outputs:
+  RoleArn:
+    Description: Put this in the workflow as AWS_ROLE_ARN
+    Value: !GetAtt DeployRole.Arn
